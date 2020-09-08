@@ -49,7 +49,6 @@ RSpec.describe "admin or supervisor assign and unassign a volunteer to case", ty
 
       assign_badge = page.find("span.badge-danger")
       expect(assign_badge.text).to eq "UNASSIGNED"
-      expect(assign_badge.text).to eq "Unassigned"
     end
 
     it "shows an assignment start date and an assignment end date" do
