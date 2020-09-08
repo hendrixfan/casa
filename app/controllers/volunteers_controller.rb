@@ -21,6 +21,7 @@ class VolunteersController < ApplicationController
 
   def edit
     @available_casa_cases = _get_available_casa_cases
+    @case_assignments = @volunteer.case_assignments.includes(:casa_case)
   end
 
   def update
@@ -60,6 +61,7 @@ class VolunteersController < ApplicationController
   private
 
   def _get_available_casa_cases
+    # TODO not multitenant-ok
     CasaCase.all.order(:case_number) || []
   end
 

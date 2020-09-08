@@ -9,20 +9,27 @@ class UserImporter < FileImporter
   end
 
   def import_volunteers
-    import do |row|
+    import do |row, index|
       create_user_record(Volunteer, row)
     end
     result_hash("volunteers")
   end
 
   def import_supervisors
+    failed_volunteers = []
     import do |row|
       supervisor = create_user_record(Supervisor, row)
-      gather_users(Volunteer, String(row[:supervisor_volunteers])).each { |volunteer|
-        if !volunteer.supervisor
-          supervisor.volunteers << volunteer
-        end
-      }
+      if supervisor
+        gather_users(Volunteer, String(row[:supervisor_volunteers])).each { |volunteer|
+          if volunteer.supervisor
+            failed_volunteers << [volunteer, supervisor, index]
+          else
+            supervisor.volunteers << volunteer
+          end
+        }
+      else
+        @failed_imports << row.to_hash.values.to_s
+      end
     end
     result_hash("supervisors")
   end
@@ -32,8 +39,9 @@ class UserImporter < FileImporter
   def create_user_record(user_class, row_data)
     user = user_class.new(row_data.to_hash.slice(:display_name, :email))
     user.casa_org_id, user.password = org_id, SecureRandom.hex(10)
-    user.save!
-    user.invite!
-    user
+    if user.save
+      user.invite!
+      user
+    end
   end
 end
