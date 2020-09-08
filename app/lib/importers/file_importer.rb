@@ -25,18 +25,20 @@ class FileImporter
 
   def result_hash(type)
     successful_import_message = "You successfully imported #{number_imported} #{type}"
+    error_message = ' '
+    if failed_volunteers.present?
+      error_message << "The following volunteers were not imported:"
+      error_message << failed_volunteers.map { |volunteer, supervisor, row_num|
+        "#{volunteer.email} was not assigned to supervisor #{supervisor.email} on row ##{row_num}"
+      }.join(", ")
+    end
     if failed_imports.empty?
       {type: :success, message: "#{successful_import_message}."}
     else
       {type: :error, message: "#{successful_import_message}. "\
-        "The following #{type} were not imported: #{failed_imports.join(", ")}."}
+        "The following #{type} were not imported: #{failed_imports.join(", ")}.#{error_message}"}
     end
-    if failed_volunteers.present?
-      message << "The following volunteers were not imported:"
-      message << failed_volunteers.map { |volunteer, supervisor, row_num|
-        "#{volunteer.email} was not assigned to supervisor #{supervisor.email} on row ##{row_num}"
-      }.join(", ")
-    end
+
   end
 
   def gather_users(clazz, comma_separated_emails)
